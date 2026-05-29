@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MOOD · Salon de coiffure & barbier à Borgo · Balayage flash</title>
+<meta name="description" content="MOOD, salon de coiffure mixte et barbier à Borgo (Haute-Corse). Spécialiste du balayage flash, mèches, couleur, bar à frange, coiffure de mariage. Note 4.9/5. Réservation au 04 95 37 66 33." />
+<meta name="theme-color" content="#F2F0EC" />
+<meta property="og:title" content="MOOD · Coiffure & Barbier · Borgo" />
+<meta property="og:description" content="Votre couleur, révélée. Balayage flash, mèches, couleur, barbier à Borgo. 4.9/5 sur Google." />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./tailwind.css" />
+
+<style>
+  :root{
+    --bg:#F2F0EC; --ink:#16130F; --ink-2:#6E665C;
+    --accent:#B5582E; --line:#D9D3C8; --gold:#C9A24B;
+  }
+  html{ -webkit-font-smoothing:antialiased; scroll-behavior:smooth; }
+  body{ background:var(--bg); color:var(--ink); font-family:"Outfit",system-ui,sans-serif; overflow-x:hidden; }
+  ::selection{ background:var(--accent); color:#fff; }
+
+  /* texture fines mèches verticales */
+  .strands{
+    background-image:repeating-linear-gradient(90deg,
+      rgba(110,102,92,.05) 0 1px, transparent 1px 14px);
+  }
+
+  /* dégradé racine -> pointe sur les titres */
+  .tint-text{
+    background:linear-gradient(100deg,var(--ink) 0%, var(--ink) 38%, var(--accent) 78%, #d9824f 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+
+  /* divider mèche posée à plat */
+  .strand-divider{
+    height:2px; border:0; width:100%;
+    background:linear-gradient(90deg,var(--ink) 0%, var(--accent) 42%, rgba(181,88,46,0) 100%);
+  }
+
+  /* SCRIM contraste texte sur photo */
+  .scrim{
+    position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:
+      radial-gradient(60% 45% at 50% 52%, rgba(15,10,6,.42) 0%, transparent 70%),
+      linear-gradient(180deg, rgba(15,10,6,.55) 0%, rgba(15,10,6,.15) 22%, transparent 45%, transparent 58%, rgba(15,10,6,.40) 84%, rgba(15,10,6,.74) 100%);
+  }
+  .on-photo, .on-photo *{ text-shadow:0 1px 2px rgba(0,0,0,.45), 0 2px 18px rgba(0,0,0,.35); }
+  .chip-glass{
+    background:rgba(15,10,6,.42); backdrop-filter:blur(5px);
+    color:#fff; border:1px solid rgba(255,255,255,.16);
+  }
+
+  /* ===== Reveals robustes ===== */
+  .js-ready [data-reveal]{ opacity:0; transform:translateY(16px);
+    animation:autoreveal .55s cubic-bezier(.2,.7,.2,1) .25s forwards; }
+  @keyframes autoreveal{ to{ opacity:1; transform:translateY(0); } }
+
+  /* ===== Révélateur de teinte ===== */
+  .reveal-stage{ position:relative; overflow:hidden; }
+  .reveal-stage img{ display:block; width:100%; height:100%; object-fit:cover;
+    filter:brightness(.92) saturate(1.05) contrast(1.03); }
+  .reveal-before{
+    position:absolute; inset:0; z-index:1;
+    -webkit-clip-path:inset(0 calc(100% - var(--reveal,55%)) 0 0);
+    clip-path:inset(0 calc(100% - var(--reveal,55%)) 0 0);
+  }
+  .reveal-before img{ filter:grayscale(1) brightness(1.12) contrast(.94) saturate(.4); }
+  .brush{
+    position:absolute; top:0; bottom:0; z-index:5;
+    left:var(--reveal,55%); width:2px; margin-left:-1px;
+    background:linear-gradient(180deg, rgba(181,88,46,0) 0%, var(--accent) 14%, var(--accent) 86%, rgba(181,88,46,0) 100%);
+    touch-action:none;
+  }
+  .brush-knob{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:46px; height:46px; border-radius:999px;
+    background:#fff; border:2px solid var(--accent);
+    box-shadow:0 6px 22px rgba(0,0,0,.32);
+    display:grid; place-items:center; cursor:ew-resize;
+  }
+  .brush-label{
+    position:absolute; top:-30px; left:50%; transform:translateX(-50%);
+    white-space:nowrap; font-family:"Space Mono",monospace; font-size:.62rem;
+    letter-spacing:.1em; text-transform:uppercase; color:#fff;
+    background:rgba(15,10,6,.55); padding:.2rem .5rem; border-radius:999px; backdrop-filter:blur(4px);
+  }
+  /* fallback CSS pur si JS absent */
+  .no-js .reveal-before{ animation:reveal-auto 6s ease-in-out infinite; }
+  @keyframes reveal-auto{
+    0%,100%{ -webkit-clip-path:inset(0 100% 0 0); clip-path:inset(0 100% 0 0); }
+    50%{ -webkit-clip-path:inset(0 30% 0 0); clip-path:inset(0 30% 0 0); }
+  }
+
+  /* marquee */
+  .marquee-track{ display:flex; width:max-content; animation:marquee 40s linear infinite; }
+  @keyframes marquee{ from{ transform:translateX(-50%); } to{ transform:translateX(0); } }
+
+  /* cartes prestation mèche hover */
+  .presta-card{ position:relative; overflow:hidden; transition:transform .25s ease, box-shadow .25s ease; }
+  .presta-card::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:linear-gradient(180deg,var(--accent),#d9824f);
+    transform:translateX(-100%); transition:transform .22s ease;
+  }
+  .presta-card:hover{ transform:translateY(-3px); box-shadow:0 14px 40px -22px rgba(22,19,15,.5); }
+  .presta-card:hover::before{ transform:translateX(0); }
+
+  .swatch{ transition:transform .18s ease, box-shadow .18s ease; }
+  .swatch[aria-pressed="true"]{ transform:scale(1.06); box-shadow:0 8px 24px -8px rgba(0,0,0,.4); }
+
+  .gal-photo img{ transition:filter .5s ease, transform .9s ease; }
+  .gal-figure:hover img{ filter:saturate(1.2) brightness(.95) contrast(1.04); }
+
+  iframe.maps{ filter:grayscale(.1) contrast(.97); }
+
+  @media (prefers-reduced-motion:reduce){
+    .marquee-track{ animation:none; }
+    .no-js .reveal-before{ animation:none; -webkit-clip-path:inset(0 40% 0 0); clip-path:inset(0 40% 0 0); }
+    .js-ready [data-reveal]{ animation:none; opacity:1; transform:none; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+
+<body class="no-js antialiased">
+
+<!-- ====== HEADER ====== -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <div class="backdrop-blur-md bg-[rgba(242,240,236,.82)] border-b border-line">
+    <div class="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
+      <a href="#top" class="font-display text-2xl leading-none tracking-tight">MOOD</a>
+      <nav class="hidden md:flex items-center gap-7 font-body text-[.82rem] text-ink-2">
+        <a href="#studio" class="hover:text-ink transition">Le studio</a>
+        <a href="#couleur" class="hover:text-ink transition">La couleur</a>
+        <a href="#prestations" class="hover:text-ink transition">Prestations</a>
+        <a href="#galerie" class="hover:text-ink transition">Galerie</a>
+        <a href="#trouver" class="hover:text-ink transition">Nous trouver</a>
+      </nav>
+      <a href="tel:+33495376633" class="hidden sm:inline-flex items-center gap-2 bg-accent text-white font-body font-medium text-[.8rem] px-4 py-2 rounded-full hover:bg-[#9f4a24] transition">
+        Réserver · 04 95 37 66 33
+      </a>
+    </div>
+    <!-- barre nuancier -->
+    <div class="border-t border-line bg-[rgba(242,240,236,.6)]">
+      <div class="max-w-6xl mx-auto px-5 h-9 flex items-center gap-3 overflow-x-auto">
+        <span class="font-mono text-[.6rem] tracking-[.14em] uppercase text-ink-2 shrink-0">Nuancier</span>
+        <a href="#studio" title="Le studio" class="w-4 h-4 rounded-[3px] shrink-0" style="background:#6E665C"></a>
+        <a href="#couleur" title="La couleur" class="w-4 h-4 rounded-[3px] shrink-0" style="background:#3D2314"></a>
+        <a href="#prestations" title="Prestations" class="w-4 h-4 rounded-[3px] shrink-0" style="background:#B5582E"></a>
+        <a href="#galerie" title="Galerie" class="w-4 h-4 rounded-[3px] shrink-0" style="background:#C9A24B"></a>
+        <a href="#trouver" title="Nous trouver" class="w-4 h-4 rounded-[3px] shrink-0" style="background:#D9D3C8"></a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ====== HERO révélateur ====== -->
+<section class="relative min-h-[92vh] flex items-end overflow-hidden">
+  <div id="hero-stage" class="reveal-stage absolute inset-0" style="--reveal:55%">
+    <!-- version colorée (fond) -->
+    <img id="hero-image" src="./assets/images/balayage-resultat.jpg" alt="Balayage flash révélé sur cheveux longs au salon MOOD" loading="eager" fetchpriority="high" />
+    <!-- version avant couleur (clip) -->
+    <div class="reveal-before">
+      <img src="./assets/images/balayage-resultat.jpg" alt="" aria-hidden="true" />
+    </div>
+    <div class="scrim"></div>
+    <!-- curseur pinceau -->
+    <div id="brush" class="brush" role="slider" aria-label="Glisser pour révéler la couleur" aria-valuemin="0" aria-valuemax="100" aria-valuenow="55" tabindex="0">
+      <span id="brush-label" class="brush-label">Balayage flash</span>
+      <span class="brush-knob" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B5582E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l-6 6v3h3l6-6"/><path d="M14 6l4 4"/><path d="M19 3l2 2-5 5-2-2z"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+
+  <div class="on-photo relative z-10 w-full max-w-6xl mx-auto px-5 pb-12 sm:pb-16">
+    <p data-reveal class="font-mono text-[.68rem] sm:text-[.72rem] tracking-[.18em] uppercase text-[#FFE7B8]">Salon de coiffure &amp; barbier · Borgo</p>
+    <h1 data-reveal class="font-display text-white leading-[.86] tracking-tight mt-2" style="font-size:clamp(4.5rem,22vw,13rem)">MOOD</h1>
+    <p data-reveal class="font-body font-light text-white mt-1" style="font-size:clamp(1.5rem,4.5vw,2.6rem)">Votre couleur, révélée.</p>
+    <div data-reveal class="flex flex-wrap items-center gap-3 mt-6">
+      <a href="tel:+33495376633" class="inline-flex items-center gap-2 bg-accent text-white font-body font-medium px-6 py-3 rounded-full hover:bg-[#9f4a24] transition">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Réserver · 04 95 37 66 33
+      </a>
+      <a href="#prestations" class="inline-flex items-center gap-2 chip-glass font-body font-medium px-5 py-3 rounded-full hover:bg-[rgba(15,10,6,.55)] transition">Voir nos prestations</a>
+      <span class="chip-glass inline-flex items-center gap-2 px-4 py-2 rounded-full font-mono text-[.72rem]">
+        <span class="text-[#F4D17A] font-bold">4.9/5</span><span class="opacity-80">· 14 avis</span>
+      </span>
+    </div>
+    <p data-reveal class="font-mono text-[.62rem] tracking-[.12em] uppercase text-white/70 mt-5 md:hidden">Glissez le pinceau pour révéler</p>
+  </div>
+</section>
+
+<!-- ====== MARQUEE mèche ====== -->
+<div class="bg-ink text-bg overflow-hidden border-y border-[#2a241d]">
+  <div class="marquee-track py-3">
+    <span class="marquee-set flex items-center font-mono text-[.78rem] tracking-[.12em] uppercase whitespace-nowrap"></span>
+  </div>
+</div>
+
+<!-- ====== N°01 LE STUDIO ====== -->
+<section id="studio" class="strands py-20 sm:py-28">
+  <div class="max-w-6xl mx-auto px-5 grid lg:grid-cols-[1.2fr_1fr] gap-10 lg:gap-14 items-center">
+    <div>
+      <p data-reveal class="font-mono text-[.7rem] tracking-[.16em] uppercase text-ink-2">N° 01 · Le studio</p>
+      <h2 data-reveal class="tint-text font-display leading-[1.02] mt-3" style="font-size:clamp(2.2rem,6vw,4rem)">Un atelier qui vous écoute</h2>
+      <p data-reveal class="font-body text-[1.05rem] leading-relaxed text-ink-2 mt-5 max-w-xl">
+        Ouvert depuis 2021 à Borgo, MOOD est un salon mixte où l'écoute et la compréhension de vos besoins guident chaque geste. Notre équipe imagine avec vous des looks tendance et personnalisés, le balayage flash en spécialité, dans une ambiance chaleureuse pensée pour votre confort.
+      </p>
+      <hr data-reveal class="strand-divider my-8" />
+      <div data-reveal class="grid sm:grid-cols-3 gap-5">
+        <div class="flex items-start gap-3">
+          <span class="w-3.5 h-3.5 rounded-[3px] mt-1 shrink-0" style="background:#6E665C"></span>
+          <div><p class="font-body font-medium">Écoute</p><p class="font-body text-sm text-ink-2">Vos envies passent avant tout.</p></div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="w-3.5 h-3.5 rounded-[3px] mt-1 shrink-0" style="background:#B5582E"></span>
+          <div><p class="font-body font-medium">Personnalisation</p><p class="font-body text-sm text-ink-2">Un résultat taillé pour vous.</p></div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="w-3.5 h-3.5 rounded-[3px] mt-1 shrink-0" style="background:#C9A24B"></span>
+          <div><p class="font-body font-medium">Modernité</p><p class="font-body text-sm text-ink-2">Les tendances, accessibles.</p></div>
+        </div>
+      </div>
+    </div>
+    <figure data-reveal class="relative">
+      <div class="absolute left-0 top-0 bottom-0 w-2 z-10" style="background:linear-gradient(180deg,var(--accent),#d9824f)"></div>
+      <img src="./assets/images/ambiance-salon-miroirs.jpg" alt="Ambiance du salon MOOD, postes et miroirs" loading="lazy" class="w-full h-[420px] sm:h-[520px] object-cover rounded-[6px]" style="filter:saturate(1.05) contrast(1.03)" />
+    </figure>
+  </div>
+</section>
+
+<!-- ====== N°02 LA COULEUR (sombre) ====== -->
+<section id="couleur" class="bg-ink text-bg py-20 sm:py-28">
+  <div class="max-w-6xl mx-auto px-5 grid lg:grid-cols-[1fr_.85fr] gap-10 lg:gap-14 items-center">
+    <div>
+      <p data-reveal class="font-mono text-[.7rem] tracking-[.16em] uppercase text-[#d9824f]">N° 02 · La couleur</p>
+      <h2 data-reveal class="font-display leading-[1.04] mt-3" style="font-size:clamp(2.2rem,6vw,4rem)">Le balayage flash,<br/>notre signature</h2>
+      <p data-reveal class="font-body text-[1.05rem] leading-relaxed text-[#cfc8bd] mt-5 max-w-lg">
+        Mèches lumineuses, dégradés sur-mesure, couleur fondue racine à pointe. Choisissez une dominante, la matière se révèle sous la lumière du studio.
+      </p>
+      <div data-reveal class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8" id="nuancier">
+        <button class="swatch text-left rounded-[6px] p-3 border border-[#2a241d]" data-tone="chatain" data-code="N° 4.0" data-name="Châtain cuivré" data-filter="sepia(.3) saturate(1.2) hue-rotate(-8deg)" aria-pressed="false">
+          <span class="block w-full h-10 rounded-[4px] mb-2" style="background:#5a3522"></span>
+          <span class="font-body text-sm font-medium">Châtain cuivré</span>
+        </button>
+        <button class="swatch text-left rounded-[6px] p-3 border border-[#2a241d]" data-tone="miel" data-code="N° 7.43" data-name="Miel doré" data-filter="saturate(1.25) brightness(1.05) hue-rotate(8deg)" aria-pressed="false">
+          <span class="block w-full h-10 rounded-[4px] mb-2" style="background:#C9A24B"></span>
+          <span class="font-body text-sm font-medium">Miel doré</span>
+        </button>
+        <button class="swatch text-left rounded-[6px] p-3 border border-[#2a241d]" data-tone="nacre" data-code="N° 10.1" data-name="Nacré froid" data-filter="grayscale(.35) brightness(1.08) contrast(.96)" aria-pressed="false">
+          <span class="block w-full h-10 rounded-[4px] mb-2" style="background:#cdbfa6"></span>
+          <span class="font-body text-sm font-medium">Nacré froid</span>
+        </button>
+        <button class="swatch text-left rounded-[6px] p-3 border border-[#2a241d]" data-tone="cuivre" data-code="N° 7.4" data-name="Cuivre intense" data-filter="saturate(1.5) contrast(1.08) hue-rotate(-6deg)" aria-pressed="true">
+          <span class="block w-full h-10 rounded-[4px] mb-2" style="background:#B5582E"></span>
+          <span class="font-body text-sm font-medium">Cuivre intense</span>
+        </button>
+      </div>
+      <p id="tone-code" class="font-mono text-[.72rem] tracking-[.1em] uppercase text-[#d9824f] mt-4">N° 7.4 · Cuivre intense</p>
+    </div>
+    <figure data-reveal class="relative">
+      <div class="absolute left-0 top-0 bottom-0 w-2 z-10" style="background:linear-gradient(180deg,var(--accent),#d9824f)"></div>
+      <img id="tone-photo" src="./assets/images/cheveux-couleur-tendance.jpg" alt="Couleur tendance, dominante cuivre" loading="lazy" class="w-full h-[460px] sm:h-[560px] object-cover rounded-[6px]" style="filter:saturate(1.5) contrast(1.08) hue-rotate(-6deg)" />
+    </figure>
+  </div>
+</section>
+
+<!-- ====== N°03 PRESTATIONS ====== -->
+<section id="prestations" class="strands py-20 sm:py-28">
+  <div class="max-w-6xl mx-auto px-5">
+    <p data-reveal class="font-mono text-[.7rem] tracking-[.16em] uppercase text-ink-2">N° 03 · Les prestations</p>
+    <h2 data-reveal class="tint-text font-display leading-[1.02] mt-3 mb-2" style="font-size:clamp(2.2rem,6vw,4rem)">Tout pour changer de tête</h2>
+    <p data-reveal class="font-body text-ink-2 max-w-xl mb-10">Femmes, hommes, mariées : un savoir-faire complet, du diagnostic à la touche finale.</p>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <article data-reveal class="presta-card bg-white border border-line rounded-[6px] p-6 pl-7">
+        <p class="font-mono text-[.62rem] tracking-[.12em] uppercase text-ink-2">N° 3.1</p>
+        <h3 class="font-body font-medium text-[1.25rem] mt-1">Coupe &amp; coiffage</h3>
+        <p class="font-body text-sm text-ink-2 mt-2">Une coupe pensée pour votre visage et votre quotidien.</p>
+        <p class="font-mono text-[.62rem] uppercase text-ink-2 mt-4">Tarif sur devis en salon</p>
+      </article>
+
+      <article data-reveal class="presta-card bg-white rounded-[6px] p-6 pl-7" style="border:2px solid var(--accent)">
+        <div class="flex items-center justify-between">
+          <p class="font-mono text-[.62rem] tracking-[.12em] uppercase text-accent">N° 3.2</p>
+          <span class="font-mono text-[.55rem] tracking-[.12em] uppercase bg-accent text-white px-2 py-1 rounded-full">Spécialité</span>
+        </div>
+        <h3 class="font-body font-medium text-[1.25rem] mt-1">Balayage flash</h3>
+        <p class="font-body text-sm text-ink-2 mt-2">Notre signature : des reflets lumineux fondus, sur-mesure, pour tous types de cheveux.</p>
+        <p class="font-mono text-[.62rem] uppercase text-ink-2 mt-4">Tarif sur devis en salon</p>
+      </article>
+
+      <article data-reveal class="presta-card bg-white border border-line rounded-[6px] p-6 pl-7">
+        <p class="font-mono text-[.62rem] tracking-[.12em] uppercase text-ink-2">N° 3.3</p>
+        <h3 class="font-body font-medium text-[1.25rem] mt-1">Mèches</h3>
+        <p class="font-body text-sm text-ink-2 mt-2">Du contraste, de la profondeur, des jeux de lumière dans la longueur.</p>
+        <p class="font-mono text-[.62rem] uppercase text-ink-2 mt-4">Tarif sur devis en salon</p>
+      </article>
+
+      <article data-reveal class="presta-card bg-white border border-line rounded-[6px] p-6 pl-7">
+        <p class="font-mono text-[.62rem] tracking-[.12em] uppercase text-ink-2">N° 3.4</p>
+        <h3 class="font-body font-medium text-[1.25rem] mt-1">Couleur</h3>
+        <p class="font-body text-sm text-ink-2 mt-2">Coloration complète, des tons naturels aux teintes affirmées.</p>
+        <p class="font-mono text-[.62rem] uppercase text-ink-2 mt-4">Tarif sur devis en salon</p>
+      </article>
+
+      <article data-reveal class="presta-card bg-white border border-line rounded-[6px] p-6 pl-7">
+        <p class="font-mono text-[.62rem] tracking-[.12em] uppercase text-ink-2">N° 3.5</p>
+        <h3 class="font-body font-medium text-[1.25rem] mt-1">Bilan capillaire</h3>
+        <p class="font-body text-sm text-ink-2 mt-2">Un diagnostic soin pour comprendre et sublimer votre cheveu.</p>
+        <p class="font-mono text-[.62rem] uppercase text-ink-2 mt-4">Tarif sur devis en salon</p>
+      </article>
+
+      <article data-reveal class="presta-card bg-white border border-line rounded-[6px] p-6 pl-7">
+        <p class="font-mono text-[.62rem] tracking-[.12em] uppercase text-ink-2">N° 3.6</p>
+        <h3 class="font-body font-medium text-[1.25rem] mt-1">Bar à frange</h3>
+        <p class="font-body text-sm text-ink-2 mt-2">La frange qui change tout, créée et rafraîchie sur place.</p>
+        <p class="font-mono text-[.62rem] uppercase text-ink-2 mt-4">Tarif sur devis en salon</p>
+      </article>
+
+      <article data-reveal class="presta-card bg-white border border-line rounded-[6px] p-6 pl-7">
+        <p class="font-mono text-[.62rem] tracking-[.12em] uppercase text-ink-2">N° 3.7</p>
+        <h3 class="font-body font-medium text-[1.25rem] mt-1">Barbier / Barber shop</h3>
+        <p class="font-body text-sm text-ink-2 mt-2">Coupe homme, taille et soin de barbe par des mains expertes.</p>
+        <p class="font-mono text-[.62rem] uppercase text-ink-2 mt-4">Tarif sur devis en salon</p>
+      </article>
+
+      <article data-reveal class="presta-card bg-white border border-line rounded-[6px] p-6 pl-7">
+        <p class="font-mono text-[.62rem] tracking-[.12em] uppercase text-ink-2">N° 3.8</p>
+        <h3 class="font-body font-medium text-[1.25rem] mt-1">Extensions</h3>
+        <p class="font-body text-sm text-ink-2 mt-2">Plus de longueur, plus de volume, un rendu naturel.</p>
+        <p class="font-mono text-[.62rem] uppercase text-ink-2 mt-4">Tarif sur devis en salon</p>
+      </article>
+
+      <article data-reveal class="presta-card bg-white border border-line rounded-[6px] p-6 pl-7">
+        <p class="font-mono text-[.62rem] tracking-[.12em] uppercase text-ink-2">N° 3.9</p>
+        <h3 class="font-body font-medium text-[1.25rem] mt-1">Cérémonie &amp; mariage</h3>
+        <p class="font-body text-sm text-ink-2 mt-2">Chignons et coiffures de cérémonie pour votre grand jour.</p>
+        <p class="font-mono text-[.62rem] uppercase text-ink-2 mt-4">Tarif sur devis en salon</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ====== N°04 GALERIE strip décalé ====== -->
+<section id="galerie" class="py-20 sm:py-28 bg-[#ECE9E3]">
+  <div class="max-w-5xl mx-auto px-5">
+    <p data-reveal class="font-mono text-[.7rem] tracking-[.16em] uppercase text-ink-2">N° 04 · La galerie</p>
+    <h2 data-reveal class="tint-text font-display leading-[1.02] mt-3 mb-12" style="font-size:clamp(2.2rem,6vw,4rem)">Le lookbook</h2>
+
+    <div class="flex flex-col gap-12 sm:gap-16">
+      <!-- pattern alternance via classes -->
+      <figure data-reveal class="gal-figure self-start w-full sm:w-[72%]">
+        <div class="gal-photo reveal-stage relative rounded-[6px]" style="--reveal:55%">
+          <img src="./assets/images/coupe-femme-apres.jpg" alt="Coupe femme, résultat coiffure" loading="lazy" class="w-full h-[300px] sm:h-[380px] object-cover" />
+          <div class="reveal-before"><img src="./assets/images/coupe-femme-apres.jpg" alt="" aria-hidden="true" class="w-full h-[300px] sm:h-[380px] object-cover" /></div>
+          <div class="absolute left-0 top-0 bottom-0 w-1.5 z-10" style="background:linear-gradient(180deg,var(--accent),#d9824f)"></div>
+        </div>
+        <figcaption class="font-mono text-[.62rem] tracking-[.1em] uppercase text-ink-2 mt-3">N° 04.1 · Coupe femme</figcaption>
+      </figure>
+
+      <figure data-reveal class="gal-figure self-end w-full sm:w-[64%]">
+        <div class="gal-photo reveal-stage relative rounded-[6px]" style="--reveal:55%">
+          <img src="./assets/images/barbier-homme.jpg" alt="Barbier homme au salon MOOD" loading="lazy" class="w-full h-[300px] sm:h-[380px] object-cover" />
+          <div class="reveal-before"><img src="./assets/images/barbier-homme.jpg" alt="" aria-hidden="true" class="w-full h-[300px] sm:h-[380px] object-cover" /></div>
+          <div class="absolute left-0 top-0 bottom-0 w-1.5 z-10" style="background:linear-gradient(180deg,var(--accent),#d9824f)"></div>
+        </div>
+        <figcaption class="font-mono text-[.62rem] tracking-[.1em] uppercase text-ink-2 mt-3 text-right">N° 04.2 · Barber shop</figcaption>
+      </figure>
+
+      <figure data-reveal class="gal-figure self-start w-full sm:w-[68%]">
+        <div class="gal-photo reveal-stage relative rounded-[6px]" style="--reveal:55%">
+          <img src="./assets/images/mains-coiffeur-ciseau.jpg" alt="Mains du coiffeur, ciseaux, détail" loading="lazy" class="w-full h-[300px] sm:h-[420px] object-cover" />
+          <div class="reveal-before"><img src="./assets/images/mains-coiffeur-ciseau.jpg" alt="" aria-hidden="true" class="w-full h-[300px] sm:h-[420px] object-cover" /></div>
+          <div class="absolute left-0 top-0 bottom-0 w-1.5 z-10" style="background:linear-gradient(180deg,var(--accent),#d9824f)"></div>
+        </div>
+        <figcaption class="font-mono text-[.62rem] tracking-[.1em] uppercase text-ink-2 mt-3">N° 04.3 · Le geste</figcaption>
+      </figure>
+
+      <figure data-reveal class="gal-figure self-end w-full sm:w-[64%]">
+        <div class="gal-photo reveal-stage relative rounded-[6px]" style="--reveal:55%">
+          <img src="./assets/images/hero-salon-interieur.jpg" alt="Intérieur du salon, postes de coiffage" loading="lazy" class="w-full h-[300px] sm:h-[380px] object-cover" />
+          <div class="reveal-before"><img src="./assets/images/hero-salon-interieur.jpg" alt="" aria-hidden="true" class="w-full h-[300px] sm:h-[380px] object-cover" /></div>
+          <div class="absolute left-0 top-0 bottom-0 w-1.5 z-10" style="background:linear-gradient(180deg,var(--accent),#d9824f)"></div>
+        </div>
+        <figcaption class="font-mono text-[.62rem] tracking-[.1em] uppercase text-ink-2 mt-3 text-right">N° 04.4 · Le studio</figcaption>
+      </figure>
+
+      <figure data-reveal class="gal-figure self-start w-full sm:w-[72%]">
+        <div class="gal-photo reveal-stage relative rounded-[6px]" style="--reveal:55%">
+          <img src="./assets/images/salon-accueil-moderne.jpg" alt="Espace accueil moderne du salon" loading="lazy" class="w-full h-[300px] sm:h-[380px] object-cover" />
+          <div class="reveal-before"><img src="./assets/images/salon-accueil-moderne.jpg" alt="" aria-hidden="true" class="w-full h-[300px] sm:h-[380px] object-cover" /></div>
+          <div class="absolute left-0 top-0 bottom-0 w-1.5 z-10" style="background:linear-gradient(180deg,var(--accent),#d9824f)"></div>
+        </div>
+        <figcaption class="font-mono text-[.62rem] tracking-[.1em] uppercase text-ink-2 mt-3">N° 04.5 · L'accueil</figcaption>
+      </figure>
+
+      <figure data-reveal class="gal-figure self-end w-full sm:w-[64%]">
+        <div class="gal-photo reveal-stage relative rounded-[6px]" style="--reveal:55%">
+          <img src="./assets/images/balayage-resultat.jpg" alt="Balayage flash, résultat lumineux" loading="lazy" class="w-full h-[320px] sm:h-[440px] object-cover" />
+          <div class="reveal-before"><img src="./assets/images/balayage-resultat.jpg" alt="" aria-hidden="true" class="w-full h-[320px] sm:h-[440px] object-cover" /></div>
+          <div class="absolute left-0 top-0 bottom-0 w-1.5 z-10" style="background:linear-gradient(180deg,var(--accent),#d9824f)"></div>
+        </div>
+        <figcaption class="font-mono text-[.62rem] tracking-[.1em] uppercase text-ink-2 mt-3 text-right">N° 04.6 · Balayage flash</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ====== N°05 NACRÉ FROID (preuve) ====== -->
+<section class="strands py-24 sm:py-32 text-center">
+  <div class="max-w-3xl mx-auto px-5">
+    <p data-reveal class="font-mono text-[.7rem] tracking-[.16em] uppercase text-ink-2">N° 05 · Nacré froid</p>
+    <div data-reveal class="flex items-end justify-center gap-2 mt-6">
+      <span class="font-display leading-none" style="font-size:clamp(4rem,16vw,8rem); color:var(--gold)">4.9</span>
+      <span class="font-display text-3xl sm:text-4xl text-ink-2 pb-3">/5</span>
+    </div>
+    <p data-reveal class="font-mono text-[.74rem] tracking-[.12em] uppercase text-ink-2 mt-1">14 avis Google</p>
+    <div class="flex justify-center my-7" aria-hidden="true">
+      <hr class="strand-divider max-w-xs" />
+    </div>
+    <div data-reveal class="grid sm:grid-cols-3 gap-6 mt-4 text-left">
+      <p class="font-display italic text-[1.15rem] leading-snug text-ink">« Une équipe vraiment à l'écoute. »</p>
+      <p class="font-display italic text-[1.15rem] leading-snug text-ink">« Une ambiance chaleureuse, on s'y sent bien. »</p>
+      <p class="font-display italic text-[1.15rem] leading-snug text-ink">« Un résultat à la hauteur, à chaque visite. »</p>
+    </div>
+    <p data-reveal class="font-body text-sm text-ink-2 mt-8">La meilleure note des salons de Borgo, portée par votre confiance depuis 2021.</p>
+  </div>
+</section>
+
+<!-- ====== N°06 NOUS TROUVER ====== -->
+<section id="trouver" class="bg-ink text-bg py-20 sm:py-28">
+  <div class="max-w-6xl mx-auto px-5 grid lg:grid-cols-2 gap-10 lg:gap-14 items-stretch">
+    <div>
+      <p data-reveal class="font-mono text-[.7rem] tracking-[.16em] uppercase text-[#d9824f]">N° 06 · Nous trouver</p>
+      <h2 data-reveal class="font-display leading-[1.04] mt-3" style="font-size:clamp(2.2rem,6vw,4rem)">Prendre rendez-vous</h2>
+      <a data-reveal href="tel:+33495376633" class="block font-display text-[2.4rem] sm:text-[3rem] leading-none text-bg hover:text-[#d9824f] transition mt-6">04 95 37 66 33</a>
+      <p data-reveal class="font-body text-[#cfc8bd] mt-2">Réservation par téléphone uniquement.</p>
+
+      <div data-reveal class="mt-8 font-mono text-[.82rem] text-[#cfc8bd]">
+        <p class="text-[.62rem] tracking-[.14em] uppercase text-[#8a8378] mb-3">Horaires</p>
+        <ul class="space-y-1.5">
+          <li class="flex justify-between border-b border-[#2a241d] pb-1.5"><span>Lundi</span><span>09:00 – 18:00</span></li>
+          <li class="flex justify-between border-b border-[#2a241d] pb-1.5"><span>Mardi</span><span>09:00 – 18:00</span></li>
+          <li class="flex justify-between border-b border-[#2a241d] pb-1.5"><span>Mercredi</span><span class="text-[#d9824f]">Fermé</span></li>
+          <li class="flex justify-between border-b border-[#2a241d] pb-1.5"><span>Jeudi</span><span>09:00 – 18:00</span></li>
+          <li class="flex justify-between border-b border-[#2a241d] pb-1.5"><span>Vendredi</span><span>09:00 – 18:00</span></li>
+          <li class="flex justify-between border-b border-[#2a241d] pb-1.5"><span>Samedi</span><span>09:00 – 17:00</span></li>
+          <li class="flex justify-between"><span>Dimanche</span><span class="text-[#d9824f]">Fermé</span></li>
+        </ul>
+      </div>
+
+      <div data-reveal class="mt-8">
+        <p class="font-body text-[#cfc8bd]">Résidence le Revinco, Av. de Borgo<br/>20290 Borgo, Haute-Corse</p>
+        <div class="flex flex-wrap gap-3 mt-5">
+          <a href="tel:+33495376633" class="inline-flex items-center gap-2 bg-accent text-white font-body font-medium px-6 py-3 rounded-full hover:bg-[#9f4a24] transition">Appeler le salon</a>
+          <a href="https://www.instagram.com/salon_mood_borgo/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 border border-[#3a342c] text-bg font-body font-medium px-5 py-3 rounded-full hover:border-[#d9824f] transition">@salon_mood_borgo</a>
+          <a href="https://maps.google.com/maps?q=Salon+MOOD+Borgo+Av.+de+Borgo+20290" target="_blank" rel="noopener" class="inline-flex items-center gap-2 border border-[#3a342c] text-bg font-body font-medium px-5 py-3 rounded-full hover:border-[#d9824f] transition">Itinéraire</a>
+        </div>
+      </div>
+    </div>
+
+    <div data-reveal class="rounded-[6px] overflow-hidden border border-[#2a241d] min-h-[360px]">
+      <iframe class="maps w-full h-full min-h-[360px]" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Carte du salon MOOD à Borgo" src="https://maps.google.com/maps?q=42.5600428,9.441029499999999&z=15&output=embed"></iframe>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ====== FOOTER nuancier ====== -->
+<footer class="bg-bg pt-12 pb-28 sm:pb-12">
+  <div class="max-w-6xl mx-auto px-5">
+    <div class="flex gap-1.5 mb-8" aria-hidden="true">
+      <span class="h-2.5 flex-1 rounded-[2px]" style="background:#6E665C"></span>
+      <span class="h-2.5 flex-1 rounded-[2px]" style="background:#3D2314"></span>
+      <span class="h-2.5 flex-1 rounded-[2px]" style="background:#5a3522"></span>
+      <span class="h-2.5 flex-1 rounded-[2px]" style="background:#B5582E"></span>
+      <span class="h-2.5 flex-1 rounded-[2px]" style="background:#C9A24B"></span>
+      <span class="h-2.5 flex-1 rounded-[2px]" style="background:#cdbfa6"></span>
+      <span class="h-2.5 flex-1 rounded-[2px]" style="background:#D9D3C8"></span>
+    </div>
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+      <div>
+        <p class="font-display text-5xl sm:text-6xl leading-none">MOOD</p>
+        <p class="font-mono text-[.64rem] tracking-[.14em] uppercase text-ink-2 mt-3">Coiffure &amp; barbier · Borgo · Haute-Corse</p>
+      </div>
+      <div class="font-mono text-[.7rem] text-ink-2 sm:text-right space-y-1">
+        <p><a href="tel:+33495376633" class="hover:text-accent">04 95 37 66 33</a></p>
+        <p>Lun-Ven 9h-18h · Sam 9h-17h · Mer &amp; Dim fermé</p>
+        <p><a href="https://www.instagram.com/salon_mood_borgo/" target="_blank" rel="noopener" class="hover:text-accent">@salon_mood_borgo</a></p>
+      </div>
+    </div>
+    <p class="font-body text-[11px] text-ink-2 mt-10 pt-6 border-t border-line">Site réalisé avec soin par SpeedPost.fr · Visuels d'illustration.</p>
+  </div>
+</footer>
+
+<!-- ====== Sticky bottom bar mobile ====== -->
+<a href="tel:+33495376633" class="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-accent text-white font-body font-medium text-center py-3.5 flex items-center justify-center gap-2 shadow-[0_-6px_24px_-12px_rgba(0,0,0,.5)]">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+  Appeler · 04 95 37 66 33
+</a>
+
+<script type="module">
+  document.documentElement.classList.add('js-ready');
+  const body = document.body;
+  body.classList.remove('no-js');
+
+  // ---- marquee fill ----
+  const set = document.querySelector('.marquee-set');
+  if (set) {
+    const items = ['Balayage flash','Mèches','Couleur','Bar à frange','Barbier','Chignon','Mariage','Bilan capillaire','Extensions'];
+    const scissor = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B5582E" stroke-width="2" style="margin:0 1.4rem;vertical-align:middle"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>';
+    const html = items.map(i => `<span>${i}</span>`).join(scissor) + scissor;
+    const track = document.querySelector('.marquee-track');
+    track.innerHTML = '';
+    const s1 = document.createElement('div'); s1.className = 'flex items-center font-mono text-[.78rem] tracking-[.12em] uppercase whitespace-nowrap'; s1.innerHTML = html;
+    const s2 = s1.cloneNode(true);
+    track.appendChild(s1); track.appendChild(s2);
+  }
+
+  let Motion = null;
+  try {
+    Motion = await import('https://cdn.jsdelivr.net/npm/motion@10.18.0/+esm');
+  } catch (e) { /* graceful: CSS autoreveal filet */ }
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Scroll natif : ancres lissées via CSS html{scroll-behavior:smooth}. Aucun smooth-scroll lib, aucun hijack molette.
+
+  // ---- Reveals ----
+  if (Motion && !reduce) {
+    const { inView, animate } = Motion;
+    inView('[data-reveal]', (info) => {
+      animate(info.target, { opacity: [0,1], transform: ['translateY(16px)','translateY(0)'] },
+        { duration: .5, easing: [0.2,0.7,0.2,1] });
+    }, { amount: 0.2 });
+
+    // galerie wipe en entrée de vue
+    document.querySelectorAll('.gal-photo').forEach(stage => {
+      stage.style.setProperty('--reveal','0%');
+      inView(stage, () => {
+        animate(p => stage.style.setProperty('--reveal', (p*55)+'%'),
+          { duration: .7, easing: [0.2,0.7,0.2,1] });
+      }, { amount: 0.4 });
+    });
+  } else {
+    // pas de Motion : montrer les galeries révélées
+    document.querySelectorAll('.gal-photo').forEach(s => s.style.setProperty('--reveal','55%'));
+  }
+
+  // ---- Révélateur de teinte (hero) ----
+  const stage = document.getElementById('hero-stage');
+  const brush = document.getElementById('brush');
+  const label = document.getElementById('brush-label');
+  if (stage && brush) {
+    let dragging = false, autoTimer = null, interacted = false;
+    const setReveal = (pct) => {
+      pct = Math.max(2, Math.min(98, pct));
+      stage.style.setProperty('--reveal', pct + '%');
+      brush.setAttribute('aria-valuenow', Math.round(pct));
+      if (label) label.textContent = pct < 50 ? 'Avant' : 'Balayage flash';
+    };
+    const fromEvent = (e) => {
+      const r = stage.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      setReveal((x / r.width) * 100);
+    };
+    brush.addEventListener('pointerdown', (e) => { dragging = true; interacted = true; stopAuto(); brush.setPointerCapture?.(e.pointerId); });
+    window.addEventListener('pointermove', (e) => { if (dragging) { e.preventDefault(); fromEvent(e); } }, { passive: false });
+    window.addEventListener('pointerup', () => { dragging = false; });
+    stage.addEventListener('pointerdown', (e) => { if (e.target.closest('a, button')) return; interacted = true; stopAuto(); fromEvent(e); });
+    brush.addEventListener('keydown', (e) => {
+      const cur = parseFloat(getComputedStyle(stage).getPropertyValue('--reveal')) || 55;
+      if (e.key === 'ArrowLeft') { interacted = true; stopAuto(); setReveal(cur - 5); }
+      if (e.key === 'ArrowRight') { interacted = true; stopAuto(); setReveal(cur + 5); }
+    });
+
+    // auto va-et-vient (montre l'effet, surtout mobile) tant que pas d'interaction
+    function startAuto() {
+      if (reduce) { setReveal(60); return; }
+      let dir = 1, val = 20;
+      autoTimer = setInterval(() => {
+        if (interacted) return;
+        val += dir * 1.4;
+        if (val >= 70) dir = -1;
+        if (val <= 12) dir = 1;
+        setReveal(val);
+      }, 40);
+    }
+    function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
+    setReveal(55);
+    if (!reduce) startAuto(); else setReveal(60);
+  }
+
+  // ---- Mini-nuancier ----
+  const swatches = document.querySelectorAll('#nuancier .swatch');
+  const tonePhoto = document.getElementById('tone-photo');
+  const toneCode = document.getElementById('tone-code');
+  swatches.forEach(sw => {
+    const apply = () => {
+      swatches.forEach(s => s.setAttribute('aria-pressed','false'));
+      sw.setAttribute('aria-pressed','true');
+      if (tonePhoto) tonePhoto.style.filter = sw.dataset.filter;
+      if (toneCode) toneCode.textContent = sw.dataset.code + ' · ' + sw.dataset.name;
+    };
+    sw.addEventListener('click', apply);
+    sw.addEventListener('mouseenter', apply);
+  });
+</script>
+</body>
+</html>
